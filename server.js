@@ -1,53 +1,27 @@
-/**
- * @OnlyCurrentDoc
- * @NotOnlyCurrentDoc
- * Requires the following scope:
- * - https://www.googleapis.com/auth/script.external_request
- */
+// Sửa lại code backend một chút
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
 
-// Thay YOUR_RENDER_URL bằng URL từ Render
-const BACKEND_URL = 'https://your-render-url.onrender.com/api/orders';
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-function onEdit(e) {
-  const sheet = SpreadsheetApp.getActiveSheet();
-  const data = sheet.getDataRange().getValues();
-  
-  // Lấy headers
-  const headers = data[0];
-  
-  // Chuyển đổi dữ liệu
-  const orders = data.slice(1).map(row => {
-    let order = {};
-    headers.forEach((header, index) => {
-      order[header] = row[index];
-    });
-    return order;
-  });
+// Thêm middleware
+app.use(cors());
+app.use(bodyParser.json());
 
-  // Gửi dữ liệu
-  try {
-    const options = {
-      'method': 'post',
-      'contentType': 'application/json',
-      'payload': JSON.stringify(orders),
-      'muteHttpExceptions': true
-    };
-    
-    const response = UrlFetchApp.fetch(BACKEND_URL, options);
-    Logger.log('Response: ' + response.getContentText());
-  } catch(error) {
-    Logger.log('Error: ' + error.toString());
-  }
-}
+// Route test
+app.get('/', (req, res) => {
+  res.send('Server is running!');
+});
 
-// Menu để test
-function onOpen() {
-  SpreadsheetApp.getUi()
-    .createMenu('Tùy chọn')
-    .addItem('Gửi dữ liệu', 'manualSend')
-    .addToUi();
-}
+// Route nhận dữ liệu
+app.post('/api/orders', (req, res) => {
+  const orderData = req.body;
+  console.log('Dữ liệu nhận được:', orderData);
+  res.status(200).send({ message: 'Dữ liệu đã được nhận!' });
+});
 
-function manualSend() {
-  onEdit();
-}
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
